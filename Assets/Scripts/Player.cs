@@ -1,29 +1,74 @@
+using System;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour
 {
+    public enum State
+    {
+        Idle,
+        Walking,
+        Running,
+        Dead
+    }
+    private State currentState = State.Idle;
+
     private float playerMoveSpeed = 6.0f;
     private float playerRotateSpeed = 12.0f;
 
+    private float walkSpeed = 6.0f;
+    private float runSpeed = 12.0f;
+    private float rotateSpeed = 12.0f;
+    Animator animator;
     void Start()
     {
-        
+        animator = GetComponent<Animator>();
     }
 
     void Update()
     {
-        float moveHorizontal = Input.GetAxis("Horizontal");
-        float moveVertical = Input.GetAxis("Vertical");
+        Vector3 inputDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
 
-        Vector3 dir = new Vector3(moveHorizontal, 0, moveVertical);
-
-        if(dir.sqrMagnitude > 0 )
+        // 상태 전이
+        if (inputDir.sqrMagnitude == 0)
         {
-            transform.position += dir * playerMoveSpeed * Time.deltaTime;
-
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * playerRotateSpeed);
+            ChangeState(State.Idle);
+            animator.SetTrigger("Walk");
         }
+        else if (Input.GetKey(KeyCode.LeftShift))
+        {
+            ChangeState(State.Running);
+            animator.SetTrigger("Run");
+        }
+        else
+        {
+            ChangeState(State.Walking);
+            animator.SetTrigger("Walk");
+
+        }
+
+        Move(inputDir);
+    }
+    private void Move(Vector3 dir)
+    {
+        if (dir.sqrMagnitude == 0) return;
+
+        float moveSpeed = (currentState == State.Running) ? runSpeed : walkSpeed;
+        dir.Normalize();
+
+
+        transform.position += dir * moveSpeed * Time.deltaTime;
+
+
+        Quaternion targetRot = Quaternion.LookRotation(dir);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotateSpeed);
+    }
+    void ChangeState(State newState)
+    {
+        if (currentState == newState) return;
+
+        currentState = newState;
     }
 }
+
