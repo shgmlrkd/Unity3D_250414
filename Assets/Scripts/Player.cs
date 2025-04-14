@@ -1,27 +1,29 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private float playerMoveSpeed = 6.0f;
+    private float playerRotateSpeed = 12.0f;
+
     void Start()
     {
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
-        Vector3 direction =  Vector3.forward * moveVertical + Vector3.right * moveHorizontal;
-        transform.Translate(direction.normalized * 5f * Time.deltaTime, Space.World);
 
-        // 2. È¸Àü
-        if (direction != Vector3.zero)
+        Vector3 dir = new Vector3(moveHorizontal, 0, moveVertical);
+
+        if(dir.sqrMagnitude > 0 )
         {
-            Quaternion toRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, toRotation, Time.deltaTime * 10f);
+            transform.position += dir * playerMoveSpeed * Time.deltaTime;
+
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * playerRotateSpeed);
         }
     }
 }
