@@ -12,15 +12,28 @@ public class Player : MonoBehaviour
         Running,
         Dead
     }
+
+    private static Player _instance;
+    public static Player Instance
+    {
+        get { return _instance; }
+    }
+
     private State currentState = State.Idle;
 
-    private float playerMoveSpeed = 6.0f;
-    private float playerRotateSpeed = 12.0f;
+    private float _playerMoveSpeed = 6.0f;
+    private float _playerRotateSpeed = 12.0f;
 
     /*private float walkSpeed = 6.0f;
     private float runSpeed = 12.0f;
     private float rotateSpeed = 12.0f;*/
     //Animator animator;
+
+    private void Awake()
+    {
+        _instance = this;
+    }
+
     void Start()
     {
         //animator = GetComponent<Animator>();
@@ -32,9 +45,9 @@ public class Player : MonoBehaviour
 
         if(inputDir.sqrMagnitude > 0)
         {
-            transform.Translate(inputDir * playerMoveSpeed * Time.deltaTime, Space.World); //position += inputDir * playerMoveSpeed * Time.deltaTime;
+            transform.Translate(inputDir.normalized * _playerMoveSpeed * Time.deltaTime, Space.World); //position += inputDir * playerMoveSpeed * Time.deltaTime;
 
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(inputDir), Time.deltaTime * playerRotateSpeed);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(inputDir), Time.deltaTime * _playerRotateSpeed);
         }
 
         // 상태 전이
